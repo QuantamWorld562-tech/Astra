@@ -21,8 +21,19 @@ app.use(express.json());
 app.use(cookieparser());
 app.use(urlencoded({ extended: true }));  //urlenocoed helps the server understand data sent from HTML forms.
 
+const allowedOrigins = process.env.URL
+  ? process.env.URL.split(",").map((o) => o.trim())
+  : [];
+
 const corsOptions = {
-  origin: process.env.URL,
+  origin: (origin, callback) => {
+    // allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
 };
 app.use(cors(corsOptions));

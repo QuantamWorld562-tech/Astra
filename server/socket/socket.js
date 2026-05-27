@@ -6,10 +6,15 @@ const app = express();
 
 const server = http.createServer(app);
 
+const allowedOrigins = process.env.URL
+    ? process.env.URL.split(",").map((o) => o.trim())
+    : [];
+
 const io = new Server(server,{
     cors:{
-        origin:process.env.URL,
-        methods:['GET','POST']
+        origin: allowedOrigins,
+        methods:['GET','POST'],
+        credentials: true
     }
 })
 

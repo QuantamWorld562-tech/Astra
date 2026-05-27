@@ -103,7 +103,8 @@ export const login = async (req, res) => {
     return res
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: "none",   // required for cross-origin (Vercel <-> Render)
+        secure: true,       // required when sameSite is "none"
         maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
       })
       .json({
