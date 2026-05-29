@@ -4,7 +4,7 @@ import Avatar from "react-avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../lib/axiosInstance";
 import { toast } from "react-hot-toast";
 import { setAuthUser } from "../../redux/authSlice";
 import { BASE_URL } from "../../lib/config";

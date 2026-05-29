@@ -1,6 +1,6 @@
 import "./Leftsidebar.css";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../lib/axiosInstance";
 import { toast } from "react-hot-toast";
 import { useState } from "react";
 import CreatePost from "../Components/createPost/CreatePost";

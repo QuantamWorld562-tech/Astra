@@ -3,7 +3,7 @@ import PostTop from "../PostTop/PostTop";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts } from "../../redux/postSlice";
-import axios from "axios";
+import axios from "../../lib/axiosInstance";
 import { toast } from "react-hot-toast";
 import Comment from "../Comment";
 import { BASE_URL } from "../../lib/config";

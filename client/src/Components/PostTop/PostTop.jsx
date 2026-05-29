@@ -3,7 +3,7 @@ import Avatar from "react-avatar";
 import "./PostTop.css";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import axios from "../../lib/axiosInstance";
 import { setPosts } from "../../redux/postSlice";
 import { BASE_URL } from "../../lib/config";
 

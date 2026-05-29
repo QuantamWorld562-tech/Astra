@@ -1,5 +1,5 @@
 import { setMessages } from "../redux/chatSlice";
-import axios from "axios";
+import axios from "../lib/axiosInstance";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BASE_URL } from "../lib/config";

@@ -1,5 +1,5 @@
 import { setPosts } from "../redux/postSlice";
-import axios from "axios";
+import axios from "../lib/axiosInstance";
 import { useEffect } from "react";
 import {useDispatch} from "react-redux";
 import { BASE_URL } from "../lib/config";

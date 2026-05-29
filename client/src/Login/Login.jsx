@@ -1,11 +1,11 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 import "./Login.css";
-import axios from "axios";
+import axios from "../lib/axiosInstance";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setAuthUser } from "../redux/authSlice";
+import { setAuthUser, setToken } from "../redux/authSlice";
 import { BASE_URL } from "../lib/config";
 
 const Hyperspeed = lazy(() => import("../component/Hyperspeed"));
@@ -40,6 +40,7 @@ function Login() {
       );
       if (res.data.success) {
         dispatch(setAuthUser(res.data.user));
+        dispatch(setToken(res.data.token));
         navigate("/");
         toast.success(res.data.message);
         setInput({ email: "", password: "" });

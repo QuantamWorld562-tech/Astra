@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import "./CreatePost.css";
 import Avatar from "react-avatar";
 import { readFileAsDataURL } from "../../lib/utils";
-import axios from "axios";
+import axios from "../../lib/axiosInstance";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";

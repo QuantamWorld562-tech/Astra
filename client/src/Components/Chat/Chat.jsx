@@ -5,7 +5,7 @@ import { setSelectedUser } from "../../redux/authSlice";
 import { setMessages } from "../../redux/chatSlice";
 import Avatar from "react-avatar";
 import Message from "../message/Message";
-import axios from "axios";
+import axios from "../../lib/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../lib/config";
 

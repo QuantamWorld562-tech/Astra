@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./Signup.css";
-import axios from "axios";
+import axios from "../lib/axiosInstance";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";

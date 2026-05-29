@@ -4,7 +4,7 @@ import PostTop from "../Components/PostTop/PostTop";
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setPosts, setSelectedPost } from "../redux/postSlice";
-import axios from "axios";
+import axios from "../lib/axiosInstance";
 import { toast } from "react-hot-toast";
 import { BASE_URL } from "../lib/config";
 

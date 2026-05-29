@@ -103,14 +103,15 @@ export const login = async (req, res) => {
     return res
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "none",   // required for cross-origin (Vercel <-> Render)
-        secure: true,       // required when sameSite is "none"
-        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
+        sameSite: "none",
+        secure: true,
+        maxAge: 1 * 24 * 60 * 60 * 1000,
       })
       .json({
         message: `Welcome back ${user.username}`,
         success: true,
         user,
+        token, // also send token in body for cross-origin clients
       });
   } catch (error) {
     console.log(error);

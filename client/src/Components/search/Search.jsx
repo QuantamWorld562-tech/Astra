@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import axios from "../../lib/axiosInstance";
 import Avatar from "react-avatar";
 import { useNavigate } from "react-router-dom";
 import "./Search.css";
