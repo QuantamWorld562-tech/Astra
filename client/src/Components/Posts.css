@@ -9,6 +9,8 @@
 .posts-feed {
   flex: 1;
   max-width: 600px;
+  margin: 0 auto; /* center the feed column */
+  width: 100%;
 }
 
 .posts-right {
