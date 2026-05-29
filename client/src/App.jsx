@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { io } from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
 import { setSocket } from "./redux/socketSlice";
 import { setOnlineUsers } from "./redux/chatSlice";
 import { setLikeNotification } from "./redux/rtnSlice";
@@ -116,7 +117,17 @@ const browserRouter = createBrowserRouter([
 
 function App() {
   const { user } = useSelector((store) => store.auth);
+  const { token } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
+
+  // restore axios auth header on every page load from persisted token
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common["Authorization"];
+    }
+  }, [token]);
 
   useEffect(() => {
     if (user) {
