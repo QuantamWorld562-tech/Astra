@@ -4,7 +4,7 @@ import useGetUserProfile from "./hooks/useGetUserProfile";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
-import axios from "../lib/axiosInstance";
+import axios from "./lib/axiosInstance";
 import { toast } from "react-hot-toast";
 import { setUserProfile, logout } from "./redux/authSlice";
 import { BASE_URL } from "./lib/config";
