@@ -10,10 +10,15 @@ const allowedOrigins = process.env.URL
     ? process.env.URL.split(",").map((o) => o.trim())
     : [];
 
-const io = new Server(server,{
-    cors:{
-        origin: allowedOrigins,
-        methods:['GET','POST'],
+const io = new Server(server, {
+    cors: {
+        origin: (origin, callback) => {
+            if (!origin) return callback(null, true);
+            if (origin.endsWith(".vercel.app")) return callback(null, true);
+            if (allowedOrigins.includes(origin)) return callback(null, true);
+            callback(new Error("Not allowed by CORS"));
+        },
+        methods: ['GET', 'POST'],
         credentials: true
     }
 })
