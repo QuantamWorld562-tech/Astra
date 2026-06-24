@@ -3,7 +3,7 @@ import Avatar from "react-avatar";
 import useGetUserProfile from "./hooks/useGetUserProfile";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import axios from "./lib/axiosInstance";
 import { toast } from "react-hot-toast";
 import { setUserProfile, logout } from "./redux/authSlice";
@@ -38,7 +38,7 @@ function Profile() {
   const isLoggedInUserProfile = user?._id === userProfile?._id;
   const isFollowing = userProfile?.followers?.includes(user?._id);
 
-  const handleFollowUnfollow = async () => {
+  const handleFollowUnfollow = useCallback(async () => {
     try {
       const res = await axios.post(
         `${BASE_URL}/api/user/followorunfollow/${userProfile._id}`,
@@ -46,7 +46,6 @@ function Profile() {
         { withCredentials: true },
       );
       if (res.data.success) {
-        // update followers list in redux so UI reflects immediately
         const updatedFollowers = isFollowing
           ? userProfile.followers.filter((id) => id !== user._id)
           : [...userProfile.followers, user._id];
@@ -58,7 +57,21 @@ function Profile() {
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
     }
-  };
+  }, [userProfile, isFollowing, user, dispatch]);
+
+  // Debounce: wrap the real handler so rapid clicks only fire once after 400ms
+  const debouncedFollowUnfollow = useMemo(() => {
+    let timer;
+    return () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => handleFollowUnfollow(), 400);
+    };
+  }, [handleFollowUnfollow]);
+
+  // Cancel any pending debounce on unmount
+  useEffect(() => {
+    return () => {}; // timer is local to the closure — no external cancel needed
+  }, []);
 
   let displayPost = [];
   if (activeTab === "grid") {
@@ -103,7 +116,7 @@ function Profile() {
             </>
           ) : isFollowing ? (
             <>
-              <button className="prof-btn" onClick={handleFollowUnfollow}>
+              <button className="prof-btn" onClick={debouncedFollowUnfollow}>
                 Following{" "}
                 <span className="material-symbols-outlined min">
                   stat_minus_1
@@ -112,7 +125,7 @@ function Profile() {
               <button className="prof-btn">Message</button>
             </>
           ) : (
-            <button className="prof-follow-btn" onClick={handleFollowUnfollow}>
+            <button className="prof-follow-btn" onClick={debouncedFollowUnfollow}>
               Follow
             </button>
           )}

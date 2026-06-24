@@ -3,7 +3,8 @@ import bcrypt from "bcrypt"; // used to hash and compare passwords securely
 import jwt from "jsonwebtoken"; // used to create and verify login tokens
 import cloudinary from "../utils/cloudinary.js"; // cloud storage for images
 import getDataUri from "../utils/datauri.js"; // converts image file to a string cloudinary can read
-import {Post} from "../models/post.model.js";
+import { Post } from "../models/post.model.js";
+import { getReceiverSocketId } from "../socket/socket.js";
 
 // REGISTER - creates a new account
 export const register = async (req, res) => {
@@ -13,7 +14,7 @@ export const register = async (req, res) => {
 
     // if any field is empty, stop and send an error
     if (!username || !email || !password) {
-      return res.status(401).json({
+      return res.status(400).json({
         message: " something is missing , please check! ",
         success: false,
       });
@@ -22,7 +23,7 @@ export const register = async (req, res) => {
     // check if someone already registered with this email
     const user = await User.findOne({ email });
     if (user) {
-      return res.status(401).json({
+      return res.status(409).json({
         message: "Try another email",
         success: false,
       });
@@ -51,21 +52,21 @@ export const register = async (req, res) => {
   }
 };
 
-// LOGIN - checks credentials and gives the user a token
+// LOGIN - checks credentials and gives the user access & refresh tokens
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // stop if email or password is missing
     if (!email || !password) {
-      return res.status(401).json({
+      return res.status(400).json({
         message: "Something is missing, please check! ",
         success: false,
       });
     }
 
-    // find the user by email in the database
-    let user = await User.findOne({ email });
+    // find the user by email in the database (keep this as the Mongoose document)
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(401).json({
         message: "Incorrect email or password",
@@ -82,8 +83,25 @@ export const login = async (req, res) => {
       });
     }
 
-    // build a safe user object — never send the password to the frontend
-    user = {
+    // --- NEW: Generate Access and Refresh Tokens ---
+    const accessToken = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+      expiresIn: "15m",
+    });
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.REFRESH_SECRET,
+      {
+        expiresIn: "7d",
+      },
+    );
+
+    // --- NEW: Store hashed refresh token in the database ---
+    const salt = await bcrypt.genSalt(10);
+    user.refreshToken = await bcrypt.hash(refreshToken, salt);
+    await user.save();
+
+    // build a safe user object to return to the frontend
+    const safeUser = {
       _id: user._id,
       username: user.username,
       email: user.email,
@@ -94,24 +112,19 @@ export const login = async (req, res) => {
       posts: user.posts,
     };
 
-    // create a JWT token that contains the user's ID, expires in 1 day
-    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-      expiresIn: "1d",
-    });
-
-    // send the token as a cookie (httpOnly = JS can't read it, protects from attacks)
+    // send the REFRESH token as a cookie (httpOnly protects from XSS attacks)
     return res
-      .cookie("token", token, {
+      .cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        sameSite: "none",
-        secure: true,
-        maxAge: 1 * 24 * 60 * 60 * 1000,
+        sameSite: "none", // Kept your preference (useful for cross-origin setups)
+        secure: true, // Must be true if sameSite is "none"
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
       })
       .json({
-        message: `Welcome back ${user.username}`,
+        message: `Welcome back ${safeUser.username}`,
         success: true,
-        user,
-        token, // also send token in body for cross-origin clients
+        user: safeUser,
+        accessToken, // Send the short-lived ACCESS token in the body
       });
   } catch (error) {
     console.log(error);
@@ -121,7 +134,6 @@ export const login = async (req, res) => {
     });
   }
 };
-
 // LOGOUT - clears the login token from the browser
 export const logout = async (_, res) => {
   try {
@@ -146,7 +158,9 @@ export const getProfile = async (req, res) => {
     const userId = req.params.id;
 
     // find user but hide the password field from the result
-    let user = await User.findById(userId).populate({path:'posts', options:{sort:{createdAt:-1}}}).populate('bookmarks');
+    let user = await User.findById(userId)
+      .populate({ path: "posts", options: { sort: { createdAt: -1 } } })
+      .populate("bookmarks");
     return res.status(200).json({
       user,
       success: true,
@@ -247,7 +261,9 @@ export const searchUsers = async (req, res) => {
     return res.status(200).json({ success: true, users });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal server error", success: false });
+    return res
+      .status(500)
+      .json({ message: "Internal server error", success: false });
   }
 };
 export const followOrUnfollow = async (req, res) => {
@@ -281,18 +297,46 @@ export const followOrUnfollow = async (req, res) => {
       // $pull removes the ID from the array
       // Promise.all runs both DB updates at the same time (faster)
       await Promise.all([
-        User.updateOne({ _id: followKrneWala }, { $pull: { following: jiskoFollowKarunga } }),
-        User.updateOne({ _id: jiskoFollowKarunga }, { $pull: { followers: followKrneWala } }),
+        User.updateOne(
+          { _id: followKrneWala },
+          { $pull: { following: jiskoFollowKarunga } },
+        ),
+        User.updateOne(
+          { _id: jiskoFollowKarunga },
+          { $pull: { followers: followKrneWala } },
+        ),
       ]);
-      return res.status(200).json({ message: "Unfollowed successfully", success: true });
+      return res
+        .status(200)
+        .json({ message: "Unfollowed successfully", success: true });
     } else {
       // not following → follow
       // $push adds the ID to the array
       await Promise.all([
-        User.updateOne({ _id: followKrneWala }, { $push: { following: jiskoFollowKarunga } }),
-        User.updateOne({ _id: jiskoFollowKarunga }, { $push: { followers: followKrneWala } }),
+        User.updateOne(
+          { _id: followKrneWala },
+          { $push: { following: jiskoFollowKarunga } },
+        ),
+        User.updateOne(
+          { _id: jiskoFollowKarunga },
+          { $push: { followers: followKrneWala } },
+        ),
       ]);
-      return res.status(200).json({ message: "Followed successfully", success: true });
+      return res
+        .status(200)
+        .json({ message: "Followed successfully", success: true });
+
+      const followerDetails = await User.findById(followKrneWala).select(
+        "username profilePicture",
+      );
+      const targetSocketId = getReceiverSocketId(jiskoFollowKarunga);
+      if (targetSocketId) {
+        io.to(targetSocketId).emit("notification", {
+          userId: followKrneWala,
+          userDetails: followerDetails,
+          message: `${followerDetails.username} started following you`,
+        });
+      }
     }
   } catch (error) {
     console.log(error);

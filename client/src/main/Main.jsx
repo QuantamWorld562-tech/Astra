@@ -1,12 +1,10 @@
 import "./Main.css";
 import Leftsidebar from "../Leftsidebar/Leftsidebar";
 import { Outlet, useLocation } from "react-router-dom";
-import useGetAllPost from "../hooks/useGateAllPost";
 import useGetSuggestedUsers from "../hooks/useGetSuggestedUSer";
 import FloatingLines from "../component/FloatingLines";
 
 function Main() {
-  useGetAllPost();
   useGetSuggestedUsers();
 
   const location = useLocation();

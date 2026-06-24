@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx nodemon server/index.js",
-    "build":"npm install && npm install --prefix client --legacy-peer-deps && npm run build --prefix client",
-    "start": "node server/index.js"
+    "build": "npm install && npm install --prefix client --legacy-peer-deps && npm run build --prefix client",
+    "start": "node server/index.js",
+    "postinstall": "find node_modules/bcrypt/prebuilds -name '*.node' -exec xattr -d com.apple.quarantine {} \\; 2>/dev/null || true"
   },
   "keywords": [],
   "author": "",
@@ -21,10 +22,13 @@
     "datauri": "^4.1.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.5.2",
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.1.1",
     "mongoose": "^9.3.3",
     "multer": "^2.1.1",
+    "nodemailer": "^8.0.10",
     "nodemon": "^3.1.14",
     "sharp": "^0.34.5",
     "socket.io": "^4.8.3"

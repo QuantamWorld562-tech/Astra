@@ -7,6 +7,7 @@ import { setSocket } from "./redux/socketSlice";
 import { setOnlineUsers } from "./redux/chatSlice";
 import { setLikeNotification } from "./redux/rtnSlice";
 import ProtectedRoutes from "./Components/ProtectedRoutes";
+import ErrorBoundary from "./Components/ErrorBoundary";
 import { BASE_URL } from "./lib/config";
 
 // static imports — small, always needed
@@ -36,9 +37,11 @@ const browserRouter = createBrowserRouter([
     path: "/",
     element: (
       <ProtectedRoutes>
-        <Suspense fallback={<PageLoader />}>
-          <Main />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoader />}>
+            <Main />
+          </Suspense>
+        </ErrorBoundary>
       </ProtectedRoutes>
     ),
     children: [
@@ -46,9 +49,11 @@ const browserRouter = createBrowserRouter([
         index: true,
         element: (
           <ProtectedRoutes>
-            <Suspense fallback={<PageLoader />}>
-              <Posts />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <Posts />
+              </Suspense>
+            </ErrorBoundary>
           </ProtectedRoutes>
         ),
       },
@@ -56,9 +61,11 @@ const browserRouter = createBrowserRouter([
         path: "/profile/:id",
         element: (
           <ProtectedRoutes>
-            <Suspense fallback={<PageLoader />}>
-              <Profile />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <Profile />
+              </Suspense>
+            </ErrorBoundary>
           </ProtectedRoutes>
         ),
       },
@@ -66,9 +73,11 @@ const browserRouter = createBrowserRouter([
         path: "/account/edit",
         element: (
           <ProtectedRoutes>
-            <Suspense fallback={<PageLoader />}>
-              <EditProfile />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <EditProfile />
+              </Suspense>
+            </ErrorBoundary>
           </ProtectedRoutes>
         ),
       },
@@ -76,9 +85,11 @@ const browserRouter = createBrowserRouter([
         path: "/chat",
         element: (
           <ProtectedRoutes>
-            <Suspense fallback={<PageLoader />}>
-              <Chat />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <Chat />
+              </Suspense>
+            </ErrorBoundary>
           </ProtectedRoutes>
         ),
       },
@@ -86,9 +97,11 @@ const browserRouter = createBrowserRouter([
         path: "/explore",
         element: (
           <ProtectedRoutes>
-            <Suspense fallback={<PageLoader />}>
-              <Explore />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <Explore />
+              </Suspense>
+            </ErrorBoundary>
           </ProtectedRoutes>
         ),
       },
@@ -96,9 +109,11 @@ const browserRouter = createBrowserRouter([
         path: "search",
         element: (
           <ProtectedRoutes>
-            <Suspense fallback={<PageLoader />}>
-              <Search />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <Search />
+              </Suspense>
+            </ErrorBoundary>
           </ProtectedRoutes>
         ),
       },

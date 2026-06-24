@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
     },
     password:{
         type:String,
-        required:true
+        required:false, // optional — Google OAuth users don't have a password
+        select: false,  // never send password to frontend by default
     },
     profilePicture:{
         type:String,
@@ -43,6 +44,19 @@ const userSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Post'
     }],
+    // ── Google OAuth ──────────────────────────────────────────
+    // googleId is set when user signs in via Google
+    // password is optional for Google users (they don't need one)
+    googleId: { type: String, default: null },
+
+    // ── OTP-based password reset ──────────────────────────────
+    // resetOtp stores a hashed version of the 6-digit OTP
+    resetOtp: { type: String },
+    otpExpires: { type: Date },
+    isOtpVerified: { type: Boolean, default: false },
+    // resetPasswordToken is issued after OTP is verified — used to actually set new password
+    resetPasswordToken: { type: String },
+    resetPasswordExpiry: { type: Date },
 },{timestamps:true});
 
 export const User = mongoose.model('User',userSchema);

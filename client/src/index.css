@@ -16,3 +16,29 @@ body {
   animation: spin 1s linear infinite;
   display: inline-block;
 }
+
+/* ── ERROR BOUNDARY FALLBACK ── */
+.error-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 12px;
+  color: #8e8e8e;
+}
+
+.error-fallback-icon {
+  font-size: 48px;
+  color: #ed4956;
+}
+
+.error-fallback-btn {
+  background: #0095f6;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}

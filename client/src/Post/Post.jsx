@@ -17,6 +17,7 @@ const Post = ({ post }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
   const [postLike, setPostLike] = useState(post.likes.length);
+  const [bookmark, setBookmark] = useState(user?.bookmarks?.includes(post._id) || false);
 
   const handleCommentClick = () => {
     setIsPopupOpen(true);
@@ -42,11 +43,11 @@ const Post = ({ post }) => {
         const updatedPostData = posts.map((p) =>
           p._id === post._id
             ? {
-                ...p,
-                likes: liked
-                  ? p.likes.filter((id) => id !== user._id)
-                  : [...p.likes, user._id],
-              }
+              ...p,
+              likes: liked
+                ? p.likes.filter((id) => id !== user._id)
+                : [...p.likes, user._id],
+            }
             : p,
         );
 
@@ -67,13 +68,14 @@ const Post = ({ post }) => {
       );
       if (res.data.success) {
         toast.success(res.data.message);
+        setBookmark(res.data.type === "saved");
       }
     } catch (error) {
       console.log(error);
     }
   };
 
-  
+
   return (
     <div className="post-box">
       <PostTop
@@ -85,7 +87,7 @@ const Post = ({ post }) => {
       />
 
       <div>
-        <img src={post?.image} alt="post" className="posts-pic" />
+        <img src={post?.image} alt="post" className="posts-pic" loading="lazy" />
       </div>
 
       <div className="post-bottom">
@@ -109,7 +111,7 @@ const Post = ({ post }) => {
         </div>
         <span className="material-symbols-outlined">near_me</span>
         <span
-          className="material-symbols-outlined bo"
+          className={`material-symbols-outlined bo ${bookmark ? "bookmarked" : ""}`}
           onClick={bookmarkHandler}
         >
           bookmark

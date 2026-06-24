@@ -3,6 +3,7 @@ import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/comment.model.js";
+import { Report } from "../models/report.model.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 
 // ADD NEW POST - creates a new post with an image and optional caption
@@ -57,10 +58,36 @@ export const addNewPost = async (req, res) => {
 };
 
 // GET ALL POSTS - returns every post, newest first (for the home feed)
+// export const getAllPost = async (req, res) => {
+//   try {
+//     const posts = await Post.find()
+//       .sort({ createdAt: -1 }) // -1 = descending = newest first
+//       .populate({ path: "author", select: "username profilePicture bio followers following posts" }) // include extra fields for PostTop popup
+//       .populate({
+//         path: "comments",
+//         options: { sort: { createdAt: -1 } },
+//         populate: {
+//           path: "author", // also get the author info inside each comment
+//           select: "username profilePicture",
+//         },
+//       });
+
+//     return res.status(200).json({ posts, success: true });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ message: "Internal server error", success: false });
+//   }
+// };
+
 export const getAllPost = async (req, res) => {
   try {
-    const posts = await Post.find()
-      .sort({ createdAt: -1 }) // -1 = descending = newest first
+    const limit = parseInt(req.query.limit) || 10;
+    const cursor = req.query.cursor;
+    const query = cursor ? {_id: { $lt: cursor } }: {} ;
+
+    const posts = await Post.find(query)
+      .sort({ _id: -1 }) // -1 = descending = newest first
+      .limit(limit+1)
       .populate({ path: "author", select: "username profilePicture bio followers following posts" }) // include extra fields for PostTop popup
       .populate({
         path: "comments",
@@ -71,7 +98,11 @@ export const getAllPost = async (req, res) => {
         },
       });
 
-    return res.status(200).json({ posts, success: true });
+      const hasMore = posts.length > limit;
+      if(hasMore) posts.pop();
+      const nextCursor = hasMore ? posts[posts.length - 1]._id : null ;
+
+    return res.status(200).json({ posts,nextCursor,hasMore, success: true });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error", success: false });
@@ -211,6 +242,15 @@ export const addComment = async (req, res) => {
     post.comments.push(comment._id);
     await post.save();
 
+    const postOwnerSocketId = getReceiverSocketId(post.author);
+    io.to(postOwnerSocketId).emit("notification",{
+      type:"comment",
+      userId:req.id,
+      userDetails:commenter,
+      postId,
+      message:`${commenter.username} commented on Your Post`
+    });
+    
     return res
       .status(201)
       .json({ message: "Comment Added", comment, success: true });
@@ -311,6 +351,34 @@ export const bookmarkPost = async (req, res) => {
         .status(200)
         .json({ type: "saved", message: "Post bookmarked", success: true });
     }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error", success: false });
+  }
+};
+
+export const reportPost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const reportedBy = req.id;
+    const { reason } = req.body;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found", success: false });
+    }
+
+    if (!reason) {
+      return res.status(400).json({ message: "Reason is required", success: false });
+    }
+
+    await Report.create({
+      postId,
+      reportedBy,
+      reason,
+    });
+
+    return res.status(200).json({ message: "Post reported successfully", success: true });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error", success: false });

@@ -84,6 +84,10 @@
   font-variation-settings: 'FILL' 1;
 }
 
+.bookmarked{
+  font-variation-settings: 'FILL' 1;
+  color: #2f2d2d;
+}
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .post-box {
@@ -106,3 +110,4 @@
     min-height: 250px;
   }
 }
+

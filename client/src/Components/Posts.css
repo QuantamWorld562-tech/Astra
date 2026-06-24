@@ -39,3 +39,11 @@
     display: none; /* hide right sidebar on mobile */
   }
 }
+
+/* ── FEED STATUS (loading / all caught up) ── */
+.feed-status {
+  text-align: center;
+  padding: 15px;
+  color: #8e8e8e;
+  font-size: 14px;
+}

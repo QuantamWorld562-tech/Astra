@@ -133,3 +133,59 @@
   border: 2 px solid white;
   border-color: #ed4956;
 }
+
+.report-modal {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  width: 300px;
+  text-align: center;
+}
+
+.report-modal-title {
+  padding: 15px 0;
+  border-bottom: 1px solid #dbdbdb;
+  margin: 0;
+}
+
+.report-modal-list {
+  text-align: left;
+  padding: 0 20px;
+  list-style: none;
+}
+
+.report-modal-list li {
+  border-bottom: none;
+  padding: 10px 0;
+  cursor: pointer;
+  color: black;
+}
+
+.report-modal-list li.selected {
+  color: #0095f6;
+}
+
+.report-modal-actions {
+  padding: 15px;
+  border-top: 1px solid #dbdbdb;
+  display: flex;
+  justify-content: space-between;
+}
+
+.report-modal-cancel {
+  background: none;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  color: black;
+}
+
+.report-modal-submit {
+  background: #0095f6;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}

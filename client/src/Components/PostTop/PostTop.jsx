@@ -9,6 +9,9 @@ import { BASE_URL } from "../../lib/config";
 
 const PostTop = ({post, handleMouseEnter, handleMouseLeave, showPopup }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+
   
   const { user } = useSelector(store => store.auth);
   const { posts } = useSelector(store => store.post);
@@ -39,6 +42,53 @@ const PostTop = ({post, handleMouseEnter, handleMouseLeave, showPopup }) => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to delete post");
+    }
+  };
+
+  const handleMenuClick = async (text) => {
+    if (text === "Copy link") {
+      try {
+        await navigator.clipboard.writeText(`${window.location.origin}/post/${post._id}`);
+        toast.success("Link copied!");
+      } catch (err) {
+        toast.error("Failed to copy link");
+      }
+      setShowMenu(false);
+    } else if (text === "Share to...") {
+      try {
+        if (navigator.share) {
+          await navigator.share({ url: `${window.location.origin}/post/${post._id}`, title: post.caption });
+        } else {
+          toast.error("Web Share API not supported in this browser");
+        }
+      } catch (err) {
+        console.error("Error sharing", err);
+      }
+      setShowMenu(false);
+    } else if (text === "Report") {
+      setShowMenu(false);
+      setShowReportModal(true);
+    }
+  };
+
+  const submitReport = async () => {
+    if (!reportReason) {
+      toast.error("Please select a reason");
+      return;
+    }
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/post/${post._id}/report`,
+        { reason: reportReason },
+        { withCredentials: true }
+      );
+      if (res.data.success) {
+        toast.success(res.data.message);
+        setShowReportModal(false);
+        setReportReason("");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to report post");
     }
   };
 
@@ -104,6 +154,7 @@ const PostTop = ({post, handleMouseEnter, handleMouseLeave, showPopup }) => {
                 <li
                   key={index}
                   className={item.type === "danger" ? "danger" : ""}
+                  onClick={() => handleMenuClick(item.text)}
                 >
                   {item.text}
                 </li>
@@ -113,6 +164,29 @@ const PostTop = ({post, handleMouseEnter, handleMouseLeave, showPopup }) => {
                 user && user?._id===post?.author._id && <li onClick={deletePost} >Delete</li>
               }
             </ul>
+          </div>
+        </div>
+      )}
+
+      {showReportModal && (
+        <div className="menu-box">
+          <div className="menu-pop report-modal">
+            <h3 className="report-modal-title">Report Post</h3>
+            <ul className="report-modal-list">
+              {["It's spam", "Nudity or sexual activity", "Hate speech or symbols", "Violence or dangerous organizations", "Sale of illegal or regulated goods", "Bullying or harassment"].map((reason, idx) => (
+                <li 
+                  key={idx} 
+                  className={reportReason === reason ? "selected" : ""}
+                  onClick={() => setReportReason(reason)}
+                >
+                  {reason}
+                </li>
+              ))}
+            </ul>
+            <div className="report-modal-actions">
+              <button onClick={() => setShowReportModal(false)} className="report-modal-cancel">Cancel</button>
+              <button onClick={submitReport} className="report-modal-submit">Submit</button>
+            </div>
           </div>
         </div>
       )}
