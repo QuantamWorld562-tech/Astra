@@ -56,7 +56,7 @@ app.use("/api/auth", authRoute);
 
 app.use(express.static(path.join(_dirname,"/client/dist")));
 
-app.get("/{*splat}", (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.resolve(_dirname, "client", "dist", "index.html"));
 });
 

@@ -94,14 +94,14 @@ function Profile() {
           <h1>{userProfile?.username}</h1>
           <div>
             <p>
-              <span className="b">{userProfile?.posts.length}</span> posts
+              <span className="b">{userProfile?.posts?.length || 0}</span> posts
             </p>
             <p>
-              <span className="b">{userProfile?.followers.length}</span>{" "}
+              <span className="b">{userProfile?.followers?.length || 0}</span>{" "}
               followers
             </p>
             <p>
-              <span className="b">{userProfile?.following.length}</span>{" "}
+              <span className="b">{userProfile?.following?.length || 0}</span>{" "}
               following
             </p>
           </div>
