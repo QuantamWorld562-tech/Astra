@@ -54,10 +54,19 @@ export const googleAuth = async (req, res) => {
       }
     }
 
-    // Issue our own JWT (same as normal login)
-    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-      expiresIn: "1d",
+    // Issue access and refresh tokens (same as normal login)
+    const accessToken = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+      expiresIn: "15m",
     });
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.REFRESH_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    const salt = await bcrypt.genSalt(10);
+    user.refreshToken = await bcrypt.hash(refreshToken, salt);
+    await user.save();
 
     // Build safe user object (no password)
     const safeUser = {
@@ -72,8 +81,19 @@ export const googleAuth = async (req, res) => {
     };
 
     return res
-      .cookie("token", token, cookieOptions)
-      .json({ success: true, message: `Welcome ${user.username}`, user: safeUser, token });
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .cookie("token", accessToken, {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        maxAge: 15 * 60 * 1000,
+      })
+      .json({ success: true, message: `Welcome ${user.username}`, user: safeUser, token: accessToken, accessToken });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: "Internal server error" });
@@ -191,5 +211,46 @@ export const resetPassword = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// ── Refresh Token ─────────────────────────────────────────────────────────────
+export const refreshTokenController = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return res.status(401).json({ success: false, message: "No refresh token provided" });
+    }
+
+    const decode = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+    if (!decode) {
+      return res.status(401).json({ success: false, message: "Invalid refresh token" });
+    }
+
+    const user = await User.findById(decode.userId);
+    if (!user || !user.refreshToken) {
+      return res.status(401).json({ success: false, message: "User or refresh token not found" });
+    }
+
+    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: "Refresh token mismatch" });
+    }
+
+    const newAccessToken = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+      expiresIn: "15m",
+    });
+
+    return res
+      .cookie("token", newAccessToken, {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        maxAge: 15 * 60 * 1000,
+      })
+      .json({ success: true, token: newAccessToken, accessToken: newAccessToken });
+  } catch (error) {
+    console.error("Refresh token error:", error);
+    return res.status(401).json({ success: false, message: "Session expired, please login again" });
   }
 };

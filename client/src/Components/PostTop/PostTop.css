@@ -51,11 +51,12 @@
   background: #ffffff;
   border: 1px solid #dbdbdb;
   padding: 5px;
+  padding: 3px;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   width: 318px;
-  height: 400px;
+  height: 350px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -188,4 +189,4 @@
   border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
-}
+}

@@ -4,9 +4,13 @@ import {
   forgotPassword,
   verifyOtp,
   resetPassword,
+  refreshTokenController,
 } from "../controllers/auth.controller.js";
 
 const authRouter = express.Router();
+
+// Refresh access token
+authRouter.get("/refresh", refreshTokenController);
 
 // Google OAuth — frontend sends user info from Firebase popup
 authRouter.post("/google", googleAuth);

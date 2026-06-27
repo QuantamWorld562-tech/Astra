@@ -112,19 +112,26 @@ export const login = async (req, res) => {
       posts: user.posts,
     };
 
-    // send the REFRESH token as a cookie (httpOnly protects from XSS attacks)
+    // send both tokens as cookies (httpOnly protects from XSS attacks)
     return res
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        sameSite: "none", // Kept your preference (useful for cross-origin setups)
-        secure: true, // Must be true if sameSite is "none"
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+        sameSite: "none",
+        secure: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .cookie("token", accessToken, {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        maxAge: 15 * 60 * 1000, // 15 minutes
       })
       .json({
         message: `Welcome back ${safeUser.username}`,
         success: true,
         user: safeUser,
-        accessToken, // Send the short-lived ACCESS token in the body
+        token: accessToken, // Required by Login.jsx
+        accessToken,
       });
   } catch (error) {
     console.log(error);
@@ -134,14 +141,17 @@ export const login = async (req, res) => {
     });
   }
 };
-// LOGOUT - clears the login token from the browser
+// LOGOUT - clears the login tokens from the browser
 export const logout = async (_, res) => {
   try {
-    // overwrite the cookie with empty string and set expiry to 0 = deletes it
-    return res.cookie("token", "", { maxAge: 0 }).json({
-      message: "Logged out Successfully",
-      success: true,
-    });
+    // clear both access and refresh cookies
+    return res
+      .cookie("token", "", { maxAge: 0 })
+      .cookie("refreshToken", "", { maxAge: 0 })
+      .json({
+        message: "Logged out Successfully",
+        success: true,
+      });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -322,9 +332,6 @@ export const followOrUnfollow = async (req, res) => {
           { $push: { followers: followKrneWala } },
         ),
       ]);
-      return res
-        .status(200)
-        .json({ message: "Followed successfully", success: true });
 
       const followerDetails = await User.findById(followKrneWala).select(
         "username profilePicture",
@@ -337,6 +344,10 @@ export const followOrUnfollow = async (req, res) => {
           message: `${followerDetails.username} started following you`,
         });
       }
+
+      return res
+        .status(200)
+        .json({ message: "Followed successfully", success: true });
     }
   } catch (error) {
     console.log(error);

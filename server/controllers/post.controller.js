@@ -242,14 +242,20 @@ export const addComment = async (req, res) => {
     post.comments.push(comment._id);
     await post.save();
 
-    const postOwnerSocketId = getReceiverSocketId(post.author);
-    io.to(postOwnerSocketId).emit("notification",{
-      type:"comment",
-      userId:req.id,
-      userDetails:commenter,
-      postId,
-      message:`${commenter.username} commented on Your Post`
-    });
+    // Notify post owner about the new comment (skip if commenting on own post)
+    const postOwnerId = post.author.toString();
+    if (postOwnerId !== commentKrneWalaUserKiId) {
+      const postOwnerSocketId = getReceiverSocketId(postOwnerId);
+      if (postOwnerSocketId) {
+        io.to(postOwnerSocketId).emit("notification", {
+          type: "comment",
+          userId: commentKrneWalaUserKiId,
+          userDetails: comment.author, // already populated above
+          postId,
+          message: `${comment.author.username} commented on your post`,
+        });
+      }
+    }
     
     return res
       .status(201)

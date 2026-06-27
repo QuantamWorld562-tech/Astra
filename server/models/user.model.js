@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema({
     // resetPasswordToken is issued after OTP is verified — used to actually set new password
     resetPasswordToken: { type: String },
     resetPasswordExpiry: { type: Date },
+
+    // ── Refresh Token ────────────────────────────────────────
+    // Stores a bcrypt hash of the active refresh token for secure rotation
+    refreshToken: { type: String },
 },{timestamps:true});
 
 export const User = mongoose.model('User',userSchema);
