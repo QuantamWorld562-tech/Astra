@@ -136,10 +136,11 @@ export const login = async (req, res) => {
         accessToken,
       });
   } catch (error) {
-    console.log(error);
+    console.error("[LOGIN ERROR]", error);
     return res.status(500).json({
       message: "Internal server error",
       success: false,
+      debug: error.message,
     });
   }
 };
