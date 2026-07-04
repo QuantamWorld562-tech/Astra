@@ -2,7 +2,6 @@ import { setUserProfile } from "../redux/authSlice.js"
 import axios from "../lib/axiosInstance";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { BASE_URL } from "../lib/config";
 
 function useGetUserProfile(userId) {
   const dispatch = useDispatch();
@@ -10,7 +9,9 @@ function useGetUserProfile(userId) {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/api/user/${userId}/profile`, { withCredentials: true });
+        // axiosInstance already has baseURL set to BASE_URL — don't prefix again
+        // or it creates a double-URL like https://api.com/https://api.com/...
+        const res = await axios.get(`/api/user/${userId}/profile`, { withCredentials: true });
         if (res.data.success) {
           dispatch(setUserProfile(res.data.user));
         }

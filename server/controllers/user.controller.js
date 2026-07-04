@@ -144,10 +144,18 @@ export const login = async (req, res) => {
 // LOGOUT - clears the login tokens from the browser
 export const logout = async (_, res) => {
   try {
-    // clear both access and refresh cookies
+    // Cookies must be cleared with the SAME attributes they were set with.
+    // In production the cookies use sameSite:"none" + secure:true (cross-origin Vercel→Render).
+    // Without these matching flags the browser ignores the clear request.
+    const cookieClearOptions = {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      maxAge: 0,
+    };
     return res
-      .cookie("token", "", { maxAge: 0 })
-      .cookie("refreshToken", "", { maxAge: 0 })
+      .cookie("token", "", cookieClearOptions)
+      .cookie("refreshToken", "", cookieClearOptions)
       .json({
         message: "Logged out Successfully",
         success: true,
