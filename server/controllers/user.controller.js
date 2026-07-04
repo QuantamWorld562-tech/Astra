@@ -97,8 +97,10 @@ export const login = async (req, res) => {
 
     // --- NEW: Store hashed refresh token in the database ---
     const salt = await bcrypt.genSalt(10);
-    user.refreshToken = await bcrypt.hash(refreshToken, salt);
-    await user.save();
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
+    // Use updateOne instead of user.save() to avoid Mongoose re-validating
+    // fields that were not selected (e.g. password with select:false).
+    await User.updateOne({ _id: user._id }, { refreshToken: hashedRefreshToken });
 
     // build a safe user object to return to the frontend
     const safeUser = {

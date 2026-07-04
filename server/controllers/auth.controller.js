@@ -65,8 +65,8 @@ export const googleAuth = async (req, res) => {
     );
 
     const salt = await bcrypt.genSalt(10);
-    user.refreshToken = await bcrypt.hash(refreshToken, salt);
-    await user.save();
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
+    await User.updateOne({ _id: user._id }, { refreshToken: hashedRefreshToken });
 
     // Build safe user object (no password)
     const safeUser = {
