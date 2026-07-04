@@ -60,6 +60,16 @@ app.use((req, res) => {
   res.sendFile(path.resolve(_dirname, "client", "dist", "index.html"));
 });
 
+// Global error handler — catches any unhandled errors thrown by route handlers
+// and logs them so you can see the real cause of 500s in server logs
+app.use((err, req, res, next) => {
+  console.error(`[ERROR] ${req.method} ${req.url} —`, err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal server error",
+  });
+});
+
 server.listen(PORT, async () => {
   await connectDB();
   console.log(`server is running on the port: ${PORT}`);

@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx nodemon server/index.js",
-    "build": "npm install && npm install --prefix client --legacy-peer-deps && npm run build --prefix client",
+    "build": "npm install && npm install --prefix client --include=dev --legacy-peer-deps && npm run build --prefix client",
     "start": "node server/index.js",
     "postinstall": "find node_modules/bcrypt/prebuilds -name '*.node' -exec xattr -d com.apple.quarantine {} \\; 2>/dev/null || true"
   },
